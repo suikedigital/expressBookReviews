@@ -15,7 +15,7 @@ public_users.post("/register", (req,res) => {
     if (users[username]) {
       return res.status(400).json({ message: "Username already exists." });
     }
-  
+
     // Correctly store the password in the users object
     users[username] = { password: password };  // or simply `users[username] = { password };`
   
@@ -81,7 +81,7 @@ public_users.get('/review/:isbn',function (req, res) {
         return res.status(404).json({ message: "No reviews found for this book"})
         }
     } else {
-        return res.status(404).json({message: "Book noit found." });
+        return res.status(404).json({message: "Book not found." });
     }
 });
 
