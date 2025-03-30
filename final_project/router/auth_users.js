@@ -77,13 +77,29 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     });
 });
 
-regd_users.get("/auth/check", (req, res) => {
-    console.log("Session during check:", req.session);  // 🔍 Debugging
-    if (req.session && req.session.authorization) {
-        return res.status(200).json({ message: "Session is active", session: req.session });
-    } else {
-        return res.status(403).json({ message: "No session found" });
-    }
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const token = req.session.authorization['accessToken'];
+
+    jwt.verify(token, 'secret_key', (err, user) => {
+        if (err) { 
+            return res.status(403).json({ message: "User not authenticated" });
+        }
+    
+        const isbn = req.params.isbn;
+        const username = user.username; 
+
+        if (!books[isbn]) {
+            return res.status(403).json({ message: "Book not found" });
+        }
+
+        if (books[isbn].reviews && books[isbn].reviews[username]) {
+            // User has reviewed this book, so delete the review
+            delete books[isbn].reviews[username];
+            return res.status(200).json({ message: "Your review has been deleted successfully." });
+        } else { 
+            return res.status(403).json({ message: "You have not reviewed this book yet." });
+        }
+    });
 });
 
 module.exports.authenticated = regd_users;

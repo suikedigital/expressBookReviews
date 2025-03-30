@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
-const cookieParser = require('cookie-parser'); // ✅ Add this
+const cookieParser = require('cookie-parser');
 
 const customer_routes = require('./router/auth_users.js').authenticated;
 const genl_routes = require('./router/general.js').general;
@@ -13,8 +13,8 @@ app.use(cookieParser());
 
 app.use(session({
     secret: "fingerprint_customer",
-    resave: false,  // Change this to `false` (prevents unnecessary session overwrites)
-    saveUninitialized: false,  // Change this to `false` (only save sessions when data exists)
+    resave: false,  
+    saveUninitialized: false,  
     cookie: { httpOnly: true, secure: false, maxAge: 3600000 }  // 1-hour expiration
 }));
 
