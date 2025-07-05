@@ -37,15 +37,10 @@ regd_users.post("/login", (req, res) => {
     const token = jwt.sign({ username }, 'secret_key', { expiresIn: '1h' });
 
     req.session.authorization = { accessToken: token };
-
-    console.log("Before saving session:", req.session);
-    req.session.authorization = { accessToken: token };
     
     req.session.save(err => {
         if (err) {
             console.log("Session save error:", err);
-        } else {
-            console.log("Session saved successfully:", req.session);
         }
     });
     
@@ -54,7 +49,11 @@ regd_users.post("/login", (req, res) => {
 
 // Add a book review (requires authentication)
 regd_users.put("/auth/review/:isbn", (req, res) => {
-    const token = req.session.authorization['accessToken'];
+    if (!req.session || !req.session.authorization || !req.session.authorization.accessToken) {
+        return res.status(401).json({ message: "User not authenticated" });
+    }
+    
+    const token = req.session.authorization.accessToken;
     jwt.verify(token, 'secret_key', (err, user) => {
         if (err) {
             return res.status(403).json({ message: "User not authenticated" });
@@ -78,7 +77,11 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
-    const token = req.session.authorization['accessToken'];
+    if (!req.session || !req.session.authorization || !req.session.authorization.accessToken) {
+        return res.status(401).json({ message: "User not authenticated" });
+    }
+    
+    const token = req.session.authorization.accessToken;
 
     jwt.verify(token, 'secret_key', (err, user) => {
         if (err) { 
@@ -89,7 +92,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
         const username = user.username; 
 
         if (!books[isbn]) {
-            return res.status(403).json({ message: "Book not found" });
+            return res.status(404).json({ message: "Book not found" });
         }
 
         if (books[isbn].reviews && books[isbn].reviews[username]) {
@@ -97,7 +100,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
             delete books[isbn].reviews[username];
             return res.status(200).json({ message: "Your review has been deleted successfully." });
         } else { 
-            return res.status(403).json({ message: "You have not reviewed this book yet." });
+            return res.status(404).json({ message: "You have not reviewed this book yet." });
         }
     });
 });

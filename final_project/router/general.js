@@ -14,12 +14,14 @@ public_users.post("/register", (req,res) => {
     if (!username || !password) {
       return res.status(400).json({ message: "Both username and password are required." });
     } 
-    if (users[username]) {
+    
+    // Check uniqueness correctly with array-based storage
+    if (users.some(user => user.username === username)) {
       return res.status(400).json({ message: "Username already exists." });
     }
 
-    // Correctly store the password in the users object
-    users[username] = { password: password };  // or simply `users[username] = { password };`
+    // Use array-push approach instead of object-style storage
+    users.push({ username: username, password: password });
   
     return res.status(201).json({ message: "User registered successfully!" });
   });
@@ -120,7 +122,7 @@ public_users.get('/review/:isbn',function (req, res) {
   let isbn = req.params.isbn;
   if (books[isbn]) {
     let reviews = books[isbn].reviews
-    if (reviews.length > 0) {
+    if (Object.keys(reviews).length > 0) {
         return res.status(200).json({reviews: reviews})
     } else { 
         return res.status(404).json({ message: "No reviews found for this book"})
